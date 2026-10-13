@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BiniCard</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Caveat/Pacifico style script font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@300;400;500;600;700;800&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            script: ['"Caveat"', 'cursive'],
+            brand: ['"Quicksand"', 'sans-serif'],
+          },
+          colors: {
+            bini: {
+              teal: '#00b4b6',
+              cyan: '#0ea5e9',
+              dark: '#005f73',
+              navy: '#1e293b',
+              accent: '#0284c7',
+              lightBg: '#e6f7fa'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-900 text-slate-800 min-h-screen flex flex-col items-center justify-start p-2 sm:p-6 font-sans">
+
+  <!-- Top Controller Bar for Quick Screen Switching -->
+  <header class="prototype-header w-full max-w-4xl mb-4 flex flex-col md:flex-row items-center justify-between gap-3 bg-slate-800/80 backdrop-blur-md p-3 px-5 rounded-2xl border border-slate-700 shadow-xl">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-teal-400 flex items-center justify-center font-bold text-white shadow-lg text-lg">
+        B
+      </div>
+      <div>
+        <h1 class="text-white text-sm font-bold tracking-wide flex items-center gap-2">
+          BiniCard <span class="bg-cyan-500/20 text-cyan-300 text-[10px] px-2 py-0.5 rounded-full border border-cyan-400/30">App móvil demo</span>
+        </h1>
+        <p class="text-xs text-slate-400">Navega desde el celular o usa estos accesos directos</p>
+      </div>
+    </div>
+
+    <!-- Screen Navigator Buttons -->
+    <div class="flex flex-wrap items-center justify-center gap-1.5 text-xs">
+      <button onclick="switchScreen('screen-login')" id="btn-screen-login" class="nav-tab px-3 py-1.5 rounded-lg font-medium transition-all bg-teal-500 text-white shadow-md">1. Login</button>
+      <button onclick="switchScreen('screen-register')" id="btn-screen-register" class="nav-tab px-3 py-1.5 rounded-lg font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600">2. Registro</button>
+      <button onclick="switchScreen('screen-dashboard')" id="btn-screen-dashboard" class="nav-tab px-3 py-1.5 rounded-lg font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600">3. Dashboard</button>
+      <button onclick="switchScreen('screen-menu')" id="btn-screen-menu" class="nav-tab px-3 py-1.5 rounded-lg font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600">4. Menú</button>
+      <button onclick="switchScreen('screen-profile')" id="btn-screen-profile" class="nav-tab px-3 py-1.5 rounded-lg font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600">5. Perfil</button>
+    </div>
+  </header>
+
+  <main class="relative">
+    <!-- Smartphone Chassis -->
+    <div class="relative w-[360px] sm:w-[385px] h-[780px] sm:h-[810px] bg-black rounded-[52px] p-3 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),0_0_0_8px_#334155,0_0_0_12px_#1e293b] ring-1 ring-white/20 flex flex-col overflow-hidden">
+      
+      <!-- Phone speaker and dynamic notch -->
+      <div class="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-6 bg-black rounded-b-2xl z-50 flex items-center justify-center pointer-events-none">
+        <div class="w-12 h-1 bg-neutral-800 rounded-full mb-1"></div>
+        <div class="w-2.5 h-2.5 bg-neutral-900 rounded-full ml-3 mb-1 ring-1 ring-neutral-800"></div>
+      </div>
+
+      <!-- Smartphone Screen Viewport Container -->
+      <div id="phone-screen" class="relative w-full h-full bg-[#f3fafc] rounded-[42px] overflow-hidden flex flex-col border border-neutral-300/40">
+
+        <!-- Mobile System Status Bar -->
+        <div class="w-full pt-2.5 px-6 pb-1 flex justify-between items-center text-[11px] font-semibold text-slate-700 z-40 select-none">
+          <span id="current-clock" class="tracking-tight">9:41</span>
+          <div class="flex items-center space-x-1.5 opacity-80">
+            <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+            <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+            <i data-lucide="battery-charging" class="w-4 h-4"></i>
+          </div>
+        </div>
+
+        <!-- ========================================================
+             PANTALLA 1: LOGIN / INICIAR SESIÓN
+             ======================================================== -->
+        <section id="screen-login" class="screen-view active-screen flex-1 flex flex-col justify-between overflow-y-auto no-scrollbar pb-3">
+          <!-- Cyan Top curved banner with BiniCard logo -->
+          <div class="relative w-full bg-gradient-to-b from-[#02b3c4] to-[#0ea5e9] pt-4 pb-8 px-5 rounded-b-[38px] text-center shadow-sm">
+            <!-- Decorative route map pattern lines -->
+            <svg class="absolute inset-0 w-full h-full opacity-20 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 20 Q 80 10 120 40 T 260 30" fill="none" stroke="white" stroke-width="2.5" stroke-dasharray="4 4" />
+              <path d="M50 70 Q 150 50 250 80 T 360 40" fill="none" stroke="white" stroke-width="2" />
+            </svg>
+            <div class="relative z-10 flex items-center justify-center">
+              <span class="text-3xl font-extrabold tracking-tight text-white font-brand drop-shadow-sm flex items-center">
+                Bini<span class="text-cyan-100">Card</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Main Login Card / Content -->
+          <div class="px-5 -mt-3 flex-1 flex flex-col">
+            <!-- Welcome title -->
+            <div class="text-center mt-3 mb-3">
+              <h2 class="text-xl font-extrabold text-slate-800">
+                ¡Bienvenido a <span class="text-cyan-600">BiniCard</span>!
+              </h2>
+              <p class="text-sm font-bold text-slate-700 mt-1">Iniciar sesión</p>
+            </div>
+
+            <!-- Form Inputs -->
+            <form id="loginForm" class="space-y-2.5" novalidate>
+              <!-- DNI Input -->
+              <div class="relative flex items-center">
+                <div class="absolute left-3.5 text-slate-400">
+                  <i data-lucide="contact" class="w-5 h-5 text-slate-500"></i>
+                </div>
+                <span class="absolute left-10 text-xs font-bold text-slate-700">DNI:</span>
+                <input id="login-dni" name="dni" type="text" inputmode="numeric" autocomplete="username" maxlength="8" placeholder="Ingresa 8 dígitos" required aria-describedby="login-dni-error" class="input-pill w-full bg-white text-slate-800 font-medium pl-20 pr-4 py-2 rounded-full text-xs outline-none focus:ring-2 focus:ring-teal-400 transition" />
+              </div>
+              <p id="login-dni-error" class="field-error" role="alert"></p>
+
+              <!-- Password Input -->
+              <div class="relative flex items-center">
+                <div class="absolute left-3.5 text-slate-400">
+                  <i data-lucide="lock" class="w-5 h-5 text-slate-500"></i>
+                </div>
+                <span class="absolute left-10 text-xs font-bold text-slate-700">Contraseña:</span>
+                <input id="login-pwd" name="password" type="password" autocomplete="current-password" placeholder="Contraseña segura" required aria-describedby="login-password-error" class="input-pill w-full bg-white text-slate-800 font-medium pl-32 pr-10 py-2 rounded-full text-xs outline-none focus:ring-2 focus:ring-teal-400 transition" />
+                <button type="button" onclick="togglePasswordVisibility('login-pwd', this)" class="absolute right-3.5 text-slate-400 hover:text-slate-600">
+                  <i data-lucide="eye-off" class="w-4 h-4"></i>
+                </button>
+              </div>
+              <p id="login-password-error" class="field-error" role="alert"></p>
+
+              <!-- Links -->
+              <div class="text-center space-y-1 pt-1 text-[11px] font-medium text-slate-600">
+                <p>¿Olvidaste tu contraseña? <a href="#" onclick="event.preventDefault(); startRecovery('student')" class="text-teal-600 font-bold hover:underline">[Recuperar]</a></p>
+                <p>¿Eres nuevo? <a href="javascript:void(0)" onclick="switchScreen('screen-register')" class="text-teal-600 font-bold hover:underline">[Registrarse]</a></p>
+              </div>
+              <button type="button" onclick="showDemoCredentials()" class="w-full py-1 text-center text-[10px] font-semibold text-teal-700 underline">Ver cuentas de demostración</button>
+
+              <!-- Carné Estudiante Banner Button -->
+              <div class="pt-1">
+                <button type="button" onclick="switchScreen('screen-student-card')" class="w-full bg-gradient-to-r from-[#0284c7] via-[#029fae] to-[#00b4b6] text-white py-2 px-3 rounded-full flex items-center justify-center space-x-2 shadow-sm text-xs font-bold active:scale-98 transition">
+                  <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+                  <span>¿Eres estudiante? <span class="font-normal underline">[Valida tu carné]</span></span>
+                </button>
+              </div>
+              <button type="button" onclick="switchScreen('screen-driver-login')" class="w-full text-center text-xs font-bold text-slate-600 hover:text-teal-600 py-1">
+                ¿Eres conductor/chofer? Inicia sesión
+              </button>
+
+              <!-- Illustration Section: Bus Los Chinos + Contactless Phone -->
+              <div class="my-2 p-2 rounded-2xl bg-gradient-to-b from-sky-50 to-teal-50/50 border border-teal-100/60 flex flex-col items-center relative overflow-hidden">
+                <span class="text-center text-[12px] font-bold text-slate-700 leading-tight mb-1">
+                  Viaja rápido<br>& cómodo
+                </span>
+
+                <div class="flex items-center justify-center space-x-2 w-full px-2 py-1">
+                  <!-- Bus SVG (Los Chinos) -->
+                  <div class="w-28 relative">
+                    <svg viewBox="0 0 140 85" class="w-full drop-shadow-sm">
+                      <rect x="15" y="15" width="105" height="50" rx="8" fill="#e2f1f8" stroke="#1e3a5f" stroke-width="2.5"/>
+                      <!-- Bus Front windshield & livery -->
+                      <path d="M85 15 L120 22 L116 65 L85 65 Z" fill="#38bdf8" />
+                      <rect x="25" y="24" width="20" height="18" rx="2" fill="#bae6fd" stroke="#1e3a5f" stroke-width="1.5"/>
+                      <rect x="50" y="24" width="22" height="18" rx="2" fill="#bae6fd" stroke="#1e3a5f" stroke-width="1.5"/>
+                      <path d="M78 24 L114 26 L110 44 L78 44 Z" fill="#bae6fd" stroke="#1e3a5f" stroke-width="1.5"/>
+                      <!-- Bus Sign -->
+                      <rect x="85" y="16" width="30" height="7" rx="1.5" fill="#1e293b"/>
+                      <text x="88" y="21.5" fill="#facc15" font-size="5" font-family="sans-serif" font-weight="bold">Los Chinos</text>
+                      <!-- Bus side badge -->
+                      <rect x="24" y="48" width="22" height="6" rx="1" fill="#0284c7"/>
+                      <text x="26" y="52.5" fill="#ffffff" font-size="4" font-weight="bold">Los Chinos</text>
+                      <!-- Wheels -->
+                      <circle cx="36" cy="65" r="9" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+                      <circle cx="36" cy="65" r="4" fill="#cbd5e1"/>
+                      <circle cx="98" cy="65" r="9" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+                      <circle cx="98" cy="65" r="4" fill="#cbd5e1"/>
+                      <!-- Lights -->
+                      <rect x="117" y="52" width="4" height="4" rx="1" fill="#facc15"/>
+                    </svg>
+                  </div>
+
+                  <!-- Smartphone NFC payment graphic -->
+                  <div class="w-16 relative">
+                    <div class="w-13 h-20 bg-white border-2 border-slate-700 rounded-xl p-1 shadow-md flex flex-col items-center justify-between mx-auto">
+                      <div class="w-4 h-0.5 bg-slate-400 rounded-full"></div>
+                      <!-- NFC icon waves -->
+                      <div class="text-teal-500 my-0.5">
+                        <i data-lucide="wifi" class="w-6 h-6 rotate-90 text-teal-500"></i>
+                      </div>
+                      <div class="w-full bg-teal-600 rounded py-0.5 text-center">
+                        <span class="text-[6px] text-white font-bold tracking-wider">PAGO</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Terms & conditions Checkbox -->
+              <label class="flex items-center justify-center space-x-2 text-[11px] text-slate-700 cursor-pointer pt-0.5">
+                <input type="checkbox" checked class="accent-teal-500 w-3.5 h-3.5 rounded cursor-pointer" />
+                <span>Aceptar <span class="text-teal-600 font-semibold underline">términos y condiciones</span></span>
+              </label>
+
+              <!-- Acceder Button -->
+              <div class="pt-1">
+                <button type="submit" class="w-full py-2.5 rounded-full font-bold text-white text-sm bg-gradient-to-r from-[#0284c7] via-[#02aab0] to-[#00c9a7] shadow-md hover:opacity-95 active:scale-98 transition flex items-center justify-center space-x-2">
+                  <span>Acceder</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section id="screen-recovery" class="screen-view hidden flex-1 overflow-y-auto no-scrollbar p-5 pt-3">
+          <button onclick="switchScreen(recoveryReturnScreen())" class="mb-3 flex items-center gap-1 text-xs font-bold text-slate-700"><i data-lucide="chevron-left" class="h-4 w-4"></i>Volver</button>
+          <div class="rounded-3xl bg-white p-5 shadow-sm">
+            <h2 class="mb-2 text-center text-xl font-extrabold text-slate-800">Recuperar contraseña</h2>
+            <p class="mb-4 text-center text-sm text-slate-600">Te olvidaste de tu clave Bini? No te preocupes, aquí te ayudaremos. Indica tu correo o teléfono para enviarte un código de verificación.</p>
+            <form id="recoveryForm" class="space-y-3" novalidate>
+              <label class="block text-xs font-semibold text-slate-700" for="recovery-contact">Correo o teléfono</label>
+              <input id="recovery-contact" class="input-pill w-full rounded-xl px-3 py-3 text-sm" autocomplete="email" placeholder="correo@ejemplo.com o 999 999 999" required>
+              <p id="recovery-contact-error" class="field-error" role="alert"></p>
+              <button class="w-full rounded-full bg-teal-600 py-3 text-sm font-bold text-white">Enviar código</button>
+            </form>
+            <form id="recoveryCodeForm" class="mt-4 hidden space-y-3" novalidate>
+              <label class="block text-xs font-semibold text-slate-700" for="recovery-code">Código de verificación</label>
+              <input id="recovery-code" class="input-pill w-full rounded-xl px-3 py-3 text-sm" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos" required>
+              <p id="recovery-code-error" class="field-error" role="alert"></p>
+              <button class="w-full rounded-full bg-teal-600 py-3 text-sm font-bold text-white">Verificar código</button>
+              <p id="recovery-demo-code" class="text-center text-xs text-amber-700">Demo: el código de prueba se muestra en pantalla; no se envía un SMS/correo real.</p>
+            </form>
+          </div>
+        </section>
+
+        <section id="screen-reset-password" class="screen-view hidden flex-1 overflow-y-auto no-scrollbar p-5 pt-3">
+          <button onclick="switchScreen('screen-recovery')" class="mb-3 flex items-center gap-1 text-xs font-bold text-slate-700"><i data-lucide="chevron-left" class="h-4 w-4"></i>Volver</button>
+          <div class="rounded-3xl bg-white p-5 shadow-sm">
+            <h2 class="mb-2 text-center text-xl font-extrabold text-slate-800">Crea una contraseña nueva</h2>
+            <p class="mb-4 text-center text-sm text-slate-600">Usa una mayúscula, un número y un carácter especial.</p>
+            <form id="resetPasswordForm" class="space-y-3" novalidate>
+              <input id="new-password" class="input-pill w-full rounded-xl px-3 py-3 text-sm" type="password" autocomplete="new-password" placeholder="Nueva contraseña" required>
+              <p id="new-password-error" class="field-error" role="alert"></p>
+              <input id="confirm-password" class="input-pill w-full rounded-xl px-3 py-3 text-sm" type="password" autocomplete="new-password" placeholder="Confirma la contraseña" required>
+              <p id="confirm-password-error" class="field-error" role="alert"></p>
+              <button class="w-full rounded-full bg-teal-600 py-3 text-sm font-bold text-white">Guardar contraseña</button>
+            </form>
+          </div>
+        </section>
+
+        <section id="screen-driver-login" class="screen-view hidden flex-1 overflow-y-auto no-scrollbar p-5 pt-3">
+          <button onclick="switchScreen('screen-login')" class="mb-3 flex items-center gap-1 text-xs font-bold text-slate-700"><i data-lucide="chevron-left" class="h-4 w-4"></i>Volver</button>
+          <div class="rounded-3xl bg-white p-5 shadow-sm">
+            <div class="mb-4 rounded-2xl bg-gradient-to-r from-slate-800 to-teal-700 p-5 text-center text-white">
+              <i data-lucide="car" class="mx-auto mb-2 h-8 w-8"></i>
+              <h2 class="text-xl font-extrabold">Acceso para conductores</h2>
+              <p class="mt-1 text-sm">Tu atención al volante hace la diferencia. ¡Buen viaje!</p>
+            </div>
+            <form id="driverLoginForm" class="space-y-3" novalidate>
+              <input id="driver-user" class="input-pill w-full rounded-xl px-3 py-3 text-sm" autocomplete="username" placeholder="Usuario" required>
+              <p id="driver-user-error" class="field-error" role="alert"></p>
+              <input id="driver-password" class="input-pill w-full rounded-xl px-3 py-3 text-sm" type="password" autocomplete="current-password" placeholder="Contraseña" required>
+              <p id="driver-password-error" class="field-error" role="alert"></p>
+              <button class="w-full rounded-full bg-teal-600 py-3 text-sm font-bold text-white">Ingresar</button>
+              <button type="button" onclick="startRecovery('driver')" class="w-full py-2 text-sm font-bold text-teal-700">¿Olvidaste tu contraseña?</button>
+              <button type="button" onclick="showDemoCredentials()" class="w-full py-1 text-center text-[10px] font-semibold text-teal-700 underline">Ver cuenta de demostración</button>
+            </form>
+            <p class="mt-2 text-center text-xs text-slate-500">Acceso de demostración: no se valida contra un servidor.</p>
+          </div>
+        </section>
+
+        <section id="screen-student-card" class="screen-view hidden flex-1 overflow-y-auto no-scrollbar p-5 pt-3">
+          <button onclick="switchScreen(studentCardReturnScreen())" class="mb-3 flex items-center gap-1 text-xs font-bold text-slate-700"><i data-lucide="chevron-left" class="h-4 w-4"></i>Volver</button>
+          <div class="rounded-3xl bg-white p-5 shadow-sm">
+            <h2 class="text-center text-xl font-extrabold text-slate-800">Valida tu carné universitario</h2>
+            <p class="mb-4 mt-2 text-center text-sm text-slate-600">Solicita tu carné virtual de medio pasaje. La revisión es una demostración y no se envía a una universidad.</p>
+            <form id="studentCardForm" class="space-y-3" novalidate>
+              <input class="input-pill w-full rounded-xl px-3 py-3 text-sm" name="firstName" placeholder="Nombre" required>
+              <p class="field-error" data-error-for="firstName" role="alert"></p>
+              <input class="input-pill w-full rounded-xl px-3 py-3 text-sm" name="lastName" placeholder="Apellido" required>
+              <p class="field-error" data-error-for="lastName" role="alert"></p>
+              <input class="input-pill w-full rounded-xl px-3 py-3 text-sm" name="dni" inputmode="numeric" maxlength="8" placeholder="DNI (8 dígitos)" required>
+              <p class="field-error" data-error-for="dni" role="alert"></p>
+              <input class="input-pill w-full rounded-xl px-3 py-3 text-sm" name="university" placeholder="Universidad o instituto" required>
+              <p class="field-error" data-error-for="university" role="alert"></p>
+              <input class="input-pill w-full rounded-xl px-3 py-3 text-sm" name="campus" placeholder="Sede o lugar de inscripción" required>
+              <p class="field-error" data-error-for="campus" role="alert"></p>
+              <label class="block text-xs font-semibold text-slate-700" for="student-proof">Constancia de matrícula o carné vigente</label>
+              <input id="student-proof" class="w-full text-xs" type="file" accept="image/*,.pdf" required>
+              <p id="student-proof-error" class="field-error" role="alert"></p>
+              <button class="w-full rounded-full bg-teal-600 py-3 text-sm font-bold text-white">Enviar solicitud</button>
+            </form>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             PANTALLA 2: REGISTRO
+             ======================================================== -->
+        <section id="screen-register" class="screen-view hidden flex-1 flex flex-col justify-between overflow-y-auto no-scrollbar p-5 pt-3">
+          <div>
+            <!-- Top back header -->
+            <button onclick="switchScreen('screen-login')" class="flex items-center text-slate-700 text-xs font-semibold space-x-1 hover:text-teal-600 mb-2">
+              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+              <span>Primera vez?</span>
+            </button>
+
+            <!-- Title & Script Heading -->
+            <div class="text-center my-2">
+              <h3 class="font-script text-2xl text-slate-700 font-bold -mb-1">Es tu momento</h3>
+              <h2 class="text-2xl font-extrabold text-[#1e3a5f] tracking-tight">Registro</h2>
+            </div>
+
+            <!-- Form fields -->
+            <form onsubmit="event.preventDefault(); showToast('¡Cuenta registrada exitosamente!'); switchScreen('screen-dashboard');" class="space-y-2.5 mt-3">
+              <!-- Nombres -->
+              <div class="relative flex items-center">
+                <div class="absolute left-3.5 text-slate-400">
+                  <i data-lucide="user" class="w-4 h-4"></i>
+                </div>
+                <input type="text" placeholder="Nombres" required class="input-pill w-full bg-white text-slate-800 text-xs pl-10 pr-4 py-2 rounded-full outline-none focus:ring-2 focus:ring-teal-400" />
+              </div>
+
+              <!-- Apellidos -->
+              <div class="relative flex items-center">
+                <div class="absolute left-3.5 text-slate-400">
+                  <i data-lucide="user-check" class="w-4 h-4"></i>
+                </div>
+                <input type="text" placeholder="Apellidos" required class="input-pill w-full bg-white text-slate-800 text-xs pl-10 pr-4 py-2 rounded-full outline-none focus:ring-2 focus:ring-teal-400" />
+              </div>
+
+              <!-- DNI -->
+              <div class="relative flex items-center">
+                <div class="absolute left-3.5 text-slate-400">
+                  <i data-lucide="contact" class="w-4 h-4"></i>
+                </div>
+                <input type="text" placeholder="DNI" required class="input-pill w-full bg-white text-slate-800 text-xs pl-10 pr-4 py-2 rounded-full outline-none focus:ring-2 focus:ring-teal-400" />
+              </div>
+
+              <!-- Celular -->
+              <div class="relative flex items-center">
+                <div class="absolute left-3.5 text-slate-400">
+                  <i data-lucide="smartphone" class="w-4 h-4"></i>
+                </div>
+                <input type="tel" placeholder="Celular" required class="input-pill w-full bg-white text-slate-800 text-xs pl-10 pr-4 py-2 rounded-full outline-none focus:ring-2 focus:ring-teal-400" />
+              </div>
+
+              <!-- Correo -->
+              <div class="relative flex items-center">
+                <div class="absolute left-3.5 text-slate-400">
+                  <i data-lucide="mail" class="w-4 h-4"></i>
+                </div>
+                <input type="email" placeholder="Correo" required class="input-pill w-full bg-white text-slate-800 text-xs pl-10 pr-4 py-2 rounded-full outline-none focus:ring-2 focus:ring-teal-400" />
+              </div>
+
+              <!-- Verification code row -->
+              <div class="flex items-center space-x-2 pt-1">
+                <div class="relative flex-1">
+                  <input type="text" placeholder="Código de verificación" class="w-full bg-white text-slate-800 text-xs px-3.5 py-2 rounded-2xl border-2 border-teal-500 outline-none focus:ring-2 focus:ring-teal-300" />
+                </div>
+                <button type="button" onclick="showToast('Código SMS enviado: 4921')" class="px-5 py-2 rounded-2xl bg-gradient-to-r from-[#0284c7] to-[#00b4b6] text-white font-bold text-xs shadow-md active:scale-95 transition">
+                  Enviar
+                </button>
+              </div>
+
+              <!-- Thumb Up Illustration -->
+              <div class="flex justify-center items-center py-2">
+                <div class="w-24 h-24 rounded-full bg-cyan-100/60 flex items-center justify-center relative">
+                  <svg viewBox="0 0 100 100" class="w-20 h-20 drop-shadow">
+                    <!-- Little sparkles -->
+                    <path d="M25 25 L20 18 M80 25 L86 18 M75 35 L85 35" stroke="#00b4b6" stroke-width="3" stroke-linecap="round"/>
+                    <!-- Thumb / Hand -->
+                    <circle cx="28" cy="30" r="3" fill="#00b4b6"/>
+                    <circle cx="78" cy="30" r="3" fill="#00b4b6"/>
+                    <path d="M48 68 C45 68 38 68 38 58 L38 52 C38 46 44 45 46 38 C48 30 52 26 56 26 C60 26 61 30 61 36 L61 40 L69 40 C74 40 76 43 76 47 C76 49 74 51 75 53 C76 55 76 58 74 60 C74 63 72 65 68 67 Z" fill="#ffffff" stroke="#005f73" stroke-width="2.5" stroke-linejoin="round"/>
+                    <!-- Sleeve cuff -->
+                    <path d="M35 55 L45 55 L40 78 L25 74 Z" fill="#0284c7" stroke="#005f73" stroke-width="2"/>
+                    <circle cx="34" cy="70" r="1.5" fill="#facc15"/>
+                  </svg>
+                </div>
+              </div>
+
+              <button type="submit" class="w-full py-2.5 rounded-full font-bold text-white text-xs bg-gradient-to-r from-teal-500 to-cyan-600 shadow-md">
+                Completar Registro
+              </button>
+            </form>
+          </div>
+
+          <!-- Bottom Footer -->
+          <footer class="pt-3 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
+            <button onclick="openComplaints()" class="flex items-center space-x-1 hover:text-slate-700">
+              <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+              <span>Escribir un reclamo</span>
+            </button>
+            <span class="font-extrabold text-[#00b4b6] tracking-tight">BiniCard</span>
+          </footer>
+        </section>
+
+
+        <!-- ========================================================
+             PANTALLA 3: DASHBOARD / INICIO
+             ======================================================== -->
+        <section id="screen-dashboard" class="screen-view hidden flex-1 flex flex-col justify-between overflow-y-auto no-scrollbar p-5 pt-2">
+          <div>
+            <!-- Header bar: Menu left, Perfil right -->
+            <div class="flex items-center justify-between py-1">
+              <button onclick="switchScreen('screen-menu')" class="flex flex-col items-center text-slate-700 hover:text-teal-600 p-1">
+                <i data-lucide="menu" class="w-6 h-6 stroke-[2.2]"></i>
+                <span class="text-[10px] font-semibold -mt-0.5">menú</span>
+              </button>
+              <button onclick="switchScreen('screen-profile')" class="flex flex-col items-center text-cyan-600 hover:text-cyan-700 p-1">
+                <div class="w-7 h-7 rounded-full bg-cyan-600 text-white flex items-center justify-center shadow-sm">
+                  <i data-lucide="user" class="w-4 h-4"></i>
+                </div>
+                <span class="text-[10px] font-semibold">Perfil</span>
+              </button>
+            </div>
+
+            <div class="mb-1 text-center">
+              <p id="dashboard-user-name" class="text-xs font-bold text-teal-700">Usuario</p>
+              <p id="dashboard-role-note" class="text-[10px] text-slate-600">Tarifas regulares de la ruta.</p>
+            </div>
+
+            <!-- Page Title -->
+            <div class="text-center my-1.5">
+              <h2 class="font-script text-2xl text-slate-800 font-bold">Elige tu destino</h2>
+            </div>
+
+            <div class="mb-3 space-y-2 rounded-2xl border border-teal-100 bg-white p-3 shadow-sm">
+              <p class="text-center text-[10px] text-slate-600">Ruta 8108 · Los Chinos (La C): Santa María → Valle Hermoso. Horario informado: 4:30 a. m.–10:00 p. m.; frecuencia aprox. 7 min. Tarifa demo: S/ 1.00–S/ 6.00, referencial.</p>
+              <label class="block text-xs font-bold text-slate-700" for="route-origin">Subes en</label>
+              <select id="route-origin" class="input-pill w-full rounded-xl bg-white px-3 py-2 text-xs"></select>
+              <label class="block text-xs font-bold text-slate-700" for="route-destination">Bajas en</label>
+              <select id="route-destination" class="input-pill w-full rounded-xl bg-white px-3 py-2 text-xs"></select>
+              <p id="route-estimate" class="text-center text-xs text-slate-600">Selecciona dos paraderos para estimar la tarifa.</p>
+              <button type="button" onclick="preparePurchase(false)" class="w-full rounded-full bg-teal-600 py-2.5 text-xs font-bold text-white">Elegir destino y pagar</button>
+            </div>
+
+            <!-- 2x2 Interactive Services Grid -->
+            <div class="grid grid-cols-2 gap-3.5">
+              <!-- Card 1: Observa tu saldo -->
+              <div class="flex flex-col items-center">
+                <div onclick="toggleBalance()" class="cursor-pointer w-full aspect-square bg-white rounded-3xl card-shadow border border-slate-100 flex flex-col items-center justify-center p-3 transition hover:shadow-md active:scale-95 group">
+                  <div class="flex items-center space-x-1.5">
+                    <span id="balance-value" class="text-base font-bold text-slate-800">S/. ----</span>
+                    <button id="balance-eye-btn" class="text-slate-600 group-hover:text-teal-600">
+                      <i data-lucide="eye-off" id="balance-icon" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                  <span class="text-[9px] text-teal-600 font-medium mt-1">Toca para alternar</span>
+                </div>
+                <span class="text-center text-xs font-bold text-slate-700 mt-1.5 leading-snug">Dinero<br>líquido</span>
+              </div>
+
+              <!-- Card 2: Consulta el tarifario -->
+              <div class="flex flex-col items-center">
+                <div onclick="showPassengerTariff()" class="cursor-pointer w-full aspect-square bg-white rounded-3xl card-shadow border border-slate-100 flex flex-col items-center justify-center p-3 transition hover:shadow-md active:scale-95">
+                  <div class="flex items-center space-x-1.5">
+                    <!-- Icon bill & coins -->
+                    <div class="w-6 h-9 rounded bg-teal-100 border border-teal-500 flex items-center justify-center">
+                      <div class="w-3 h-3 rounded-full bg-teal-400"></div>
+                    </div>
+                    <div class="text-[10px] text-slate-600 font-semibold space-y-0.5 leading-none">
+                      <div>S/. – S/. –</div>
+                      <div>S/. – S/. –</div>
+                      <div>S/. – S/. –</div>
+                    </div>
+                  </div>
+                </div>
+                <span class="text-center text-xs font-bold text-slate-700 mt-1.5 leading-snug">Consulta el<br>tarifario</span>
+              </div>
+
+              <!-- Card 3: Paga boleto a alguien -->
+              <div class="flex flex-col items-center">
+                <div onclick="switchScreen('screen-friend-ticket')" class="cursor-pointer w-full aspect-square bg-white rounded-3xl card-shadow border border-slate-100 flex flex-col items-center justify-center p-2.5 transition hover:shadow-md active:scale-95">
+                  <!-- Graphic users transferring -->
+                  <div class="flex items-center justify-center space-x-1 w-full">
+                    <div class="w-7 h-11 bg-teal-100 rounded-t-lg flex flex-col items-center justify-center border border-teal-300">
+                      <div class="w-3 h-3 rounded-full bg-teal-600 mb-0.5"></div>
+                      <div class="w-2.5 h-3 bg-white rounded-sm border border-slate-600"></div>
+                    </div>
+                    <i data-lucide="repeat" class="w-3.5 h-3.5 text-teal-500"></i>
+                    <div class="w-7 h-11 bg-sky-100 rounded-t-lg flex flex-col items-center justify-center border border-sky-300">
+                      <div class="w-3 h-3 rounded-full bg-sky-600 mb-0.5"></div>
+                      <div class="w-2.5 h-3 bg-white rounded-sm border border-slate-600"></div>
+                    </div>
+                  </div>
+                </div>
+                <span class="text-center text-xs font-bold text-slate-700 mt-1.5 leading-snug">Paga boleto<br>a alguien</span>
+              </div>
+
+              <!-- Card 4: Historial -->
+              <div class="flex flex-col items-center">
+                <div onclick="openHistory()" class="cursor-pointer w-full aspect-square bg-white rounded-3xl card-shadow border border-slate-100 flex flex-col items-center justify-center p-3 transition hover:shadow-md active:scale-95">
+                  <div class="relative">
+                    <div class="w-10 h-9 bg-emerald-100 border border-emerald-400 rounded-lg p-1 grid grid-cols-3 gap-0.5">
+                      <div class="bg-emerald-400 h-1 rounded"></div>
+                      <div class="bg-emerald-400 h-1 rounded"></div>
+                      <div class="bg-emerald-400 h-1 rounded"></div>
+                      <div class="bg-emerald-400 h-1 rounded"></div>
+                      <div class="bg-emerald-400 h-1 rounded"></div>
+                      <div class="bg-emerald-400 h-1 rounded"></div>
+                    </div>
+                    <div class="absolute -top-2 -left-2 w-5 h-5 bg-white border border-slate-400 rounded-full flex items-center justify-center">
+                      <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-700"></i>
+                    </div>
+                  </div>
+                </div>
+                <span class="text-center text-xs font-bold text-slate-700 mt-1.5 leading-snug">Historial</span>
+              </div>
+            </div>
+            <div class="mt-3 space-y-2">
+              <button onclick="openHistory()" class="w-full rounded-2xl border bg-white p-3 text-left text-xs font-bold text-teal-700">Ver historial de boletos</button>
+              <button onclick="openComplaintsHistory()" class="w-full rounded-2xl border bg-white p-3 text-left text-xs font-bold text-slate-700">Leer libro de reclamaciones</button>
+            </div>
+          </div>
+
+          <!-- Bottom Footer -->
+          <footer class="pt-3 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
+            <button onclick="openComplaints()" class="flex items-center space-x-1 hover:text-slate-700">
+              <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+              <span>Libro de reclamaciones</span>
+            </button>
+            <span class="font-extrabold text-[#00b4b6] tracking-tight">BiniCard</span>
+          </footer>
+        </section>
+
+        <section id="screen-driver-dashboard" class="screen-view hidden flex-1 overflow-y-auto no-scrollbar p-5 pt-2">
+          <div class="flex items-center justify-between py-2">
+            <button onclick="switchScreen('screen-driver-menu')" class="flex flex-col items-center text-slate-700">
+              <i data-lucide="menu" class="h-6 w-6"></i><span class="text-[10px]">Menú</span>
+            </button>
+            <div class="text-center"><p id="driver-dashboard-user-name" class="text-xs font-bold text-teal-700">Chofer</p><p class="text-[10px]">ETUCHISA · Ruta 8108</p></div>
+            <button onclick="logout()" class="text-xs font-bold text-red-600">Salir</button>
+          </div>
+          <label for="driver-photo-input" class="mx-auto mt-3 flex w-fit cursor-pointer items-center gap-2 rounded-full bg-white px-3 py-2 text-[10px] font-semibold text-slate-600 shadow-sm">
+            <img id="driver-profile-photo" class="hidden h-8 w-8 rounded-full object-cover" alt="Foto del transporte o placa">
+            <span id="driver-photo-placeholder" class="flex h-8 w-8 items-center justify-center rounded-full bg-teal-50 text-teal-700"><i data-lucide="bus-front" class="h-4 w-4"></i></span>
+            <span>Agregar foto del transporte o placa</span>
+          </label>
+          <input id="driver-photo-input" class="hidden" type="file" accept="image/*">
+          <h2 class="my-3 text-center text-2xl font-extrabold text-slate-800">Panel del chofer</h2>
+          <p class="mb-4 text-center text-xs text-slate-600">Bienvenido. Conduce con atención y valida cada boleto antes de abordar.</p>
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="switchScreen('screen-driver-tariff')" class="rounded-3xl border bg-white p-5 text-left shadow-sm">
+              <i data-lucide="list-ordered" class="mb-3 h-7 w-7 text-teal-700"></i>
+              <span class="block text-sm font-extrabold">Tarifario por ruta</span>
+              <span class="mt-1 block text-[10px] text-slate-500">Ruta 8108 · hasta Valle Hermoso</span>
+            </button>
+            <button onclick="switchScreen('screen-driver-scanner')" class="rounded-3xl border bg-white p-5 text-left shadow-sm">
+              <i data-lucide="scan-qr-code" class="mb-3 h-7 w-7 text-teal-700"></i>
+              <span class="block text-sm font-extrabold">Escanear código</span>
+              <span class="mt-1 block text-[10px] text-slate-500">Validar boleto de pasajero</span>
+            </button>
+            <button onclick="toggleBalance()" class="col-span-2 flex items-center justify-between rounded-3xl border bg-white p-4 text-left shadow-sm">
+              <span><span class="block text-sm font-extrabold">Dinero líquido</span><span class="text-[10px] text-slate-500">Saldo demo</span></span>
+              <span id="driver-balance-value" class="font-bold">S/. ----</span>
+            </button>
+          </div>
+          <button onclick="openDriverHistory()" class="mt-3 w-full rounded-2xl border bg-white p-4 text-left text-xs font-bold text-teal-700">Historial de boletos escaneados</button>
+          <button onclick="openComplaintsHistory()" class="mt-2 w-full rounded-2xl border bg-white p-4 text-left text-xs font-bold text-slate-700">Leer reclamos de pasajeros</button>
+          <p class="mt-4 text-center text-[10px] text-amber-700">Modo de demostración: el QR no confirma un cobro real.</p>
+        </section>
+
+        <section id="screen-driver-menu" class="screen-view hidden flex-1 overflow-y-auto no-scrollbar p-5 pt-3">
+          <button onclick="switchScreen('screen-driver-dashboard')" class="mb-3 text-xs font-bold text-teal-700">‹ Volver al panel</button>
+          <h2 class="mb-4 text-center text-xl font-extrabold">Opciones del chofer</h2>
+          <div class="space-y-2 rounded-3xl bg-white p-4 shadow-sm">
+            <button onclick="startRecovery('driver')" class="w-full rounded-xl p-3 text-left text-sm font-semibold">Cambiar contraseña</button>
+            <button onclick="showModal('Cartilla de viajes', 'Cartilla de viajes de demostración.')" class="w-full rounded-xl p-3 text-left text-sm font-semibold">Cartilla de viajes</button>
+            <button onclick="openComplaintsHistory()" class="w-full rounded-xl p-3 text-left text-sm font-semibold">Libro de reclamaciones de pasajeros</button>
+            <button onclick="configureSupervisorContact()" class="w-full rounded-xl p-3 text-left text-sm font-semibold">Configurar contacto de superiores</button>
+            <button onclick="contactSupervisor()" class="w-full rounded-xl p-3 text-left text-sm font-semibold text-teal-700">Contactar superiores por WhatsApp</button>
+            <button onclick="openDriverHistory()" class="w-full rounded-xl p-3 text-left text-sm font-semibold">Historial de escaneos (30 días)</button>
+          </div>
+          <button onclick="logout()" class="mt-4 w-full rounded-full bg-red-50 py-3 text-sm font-bold text-red-700">Cerrar sesión</button>
+        </section>
+
+        <section id="screen-driver-tariff" class="screen-view hidden flex-1 overflow-y-auto no-scrollbar p-5 pt-3">
+          <button onclick="switchScreen('screen-driver-dashboard')" class="mb-3 text-xs font-bold text-teal-700">‹ Volver al panel</button>
+          <h2 class="text-center text-xl font-extrabold">Tarifario por paraderos</h2>
+          <p class="my-2 text-center text-[10px] text-amber-700">Ruta 8108 (La C), paraderos y datos de operación basados en la información proporcionada. Horario: 4:30 a. m.–10:00 p. m.; frecuencia aprox. 7 min. Tarifa demo: S/ 1.00 + S/ 0.10 por tramo, máximo S/ 6.00; confirma datos vigentes con Etuchisa.</p>
+          <div class="space-y-2 rounded-2xl bg-white p-3 shadow-sm">
+            <label class="block text-xs font-bold" for="driver-fare-origin">Desde</label>
+            <select id="driver-fare-origin" class="input-pill w-full rounded-xl bg-white px-3 py-2 text-xs"></select>
+            <label class="block text-xs font-bold" for="driver-fare-destination">Hasta</label>
+            <select id="driver-fare-destination" class="input-pill w-full rounded-xl bg-white px-3 py-2 text-xs"></select>
+            <p id="driver-fare-result" class="rounded-xl bg-teal-50 p-3 text-center text-sm font-bold text-teal-900">Selecciona los paraderos para consultar la tarifa.</p>
+          </div>
+          <h3 class="mb-2 mt-4 text-sm font-bold">Secuencia de paraderos</h3>
+          <ol id="driver-stops-list" class="space-y-1 rounded-2xl bg-white p-4 text-xs text-slate-700"></ol>
+        </section>
+
+        <section id="screen-driver-scanner" class="screen-view hidden flex-1 overflow-y-auto no-scrollbar p-5 pt-3">
+          <button onclick="switchScreen('screen-driver-dashboard')" class="mb-3 text-xs font-bold text-teal-700">‹ Volver al panel</button>
+          <h2 class="text-center text-xl font-extrabold">Escanear boleto</h2>
+          <p class="my-2 text-center text-xs text-slate-600">Vista de práctica del escáner. En esta demo solo se validan boletos creados en este mismo navegador.</p>
+          <div class="scanner-phone mx-auto">
+            <div class="scanner-phone-notch"></div>
+            <div class="scanner-phone-header"><span>9:41</span><span>Escáner QR</span><span>●●●</span></div>
+            <div class="scanner-camera-view">
+              <div id="scanner-camera-placeholder" class="scanner-camera-placeholder">
+                <i data-lucide="scan-line" class="h-10 w-10 opacity-70"></i>
+                <span class="mt-2 text-[10px]">La cámara enfocará el código</span>
+              </div>
+              <video id="driver-camera" class="hidden" playsinline></video>
+              <div class="scanner-viewfinder" aria-hidden="true"><span></span></div>
+              <p class="scanner-hint">Centra el código QR en el recuadro</p>
+            </div>
+            <div class="scanner-phone-footer">
+              <button onclick="startDriverCamera()" class="rounded-full bg-teal-600 px-5 py-3 text-xs font-bold text-white">Iniciar escáner</button>
+              <button onclick="stopDriverCamera()" class="mt-2 text-[10px] font-semibold text-slate-500">Cerrar cámara</button>
+            </div>
+          </div>
+          <div id="scan-result" role="status" class="mt-3 hidden rounded-2xl p-4 text-sm"></div>
+          <p id="camera-error" class="field-error mt-2 text-center" role="alert"></p>
+        </section>
+
+        <section id="screen-driver-history" class="screen-view hidden flex-1 overflow-y-auto no-scrollbar p-5 pt-3">
+          <button onclick="switchScreen('screen-driver-dashboard')" class="mb-3 text-xs font-bold text-teal-700">‹ Volver al panel</button>
+          <h2 class="mb-1 text-center text-xl font-extrabold">Historial de escaneos</h2>
+          <p class="mb-3 text-center text-[10px] text-slate-500">Los boletos se conservan durante 30 días y luego se eliminan automáticamente.</p>
+          <div id="driver-history-list" class="space-y-2"></div>
+          <p id="driver-history-empty" class="hidden py-5 text-center text-xs text-slate-500">Todavía no has escaneado boletos.</p>
+        </section>
+
+        <section id="screen-complaints" class="screen-view hidden flex-1 overflow-y-auto no-scrollbar p-5 pt-3">
+          <button onclick="switchScreen(complaintsReturnScreen())" class="mb-3 text-xs font-bold text-teal-700">‹ Volver</button>
+          <h2 class="mb-3 text-center text-xl font-extrabold">Libro de reclamaciones</h2>
+          <div id="complaints-list" class="space-y-2"></div>
+          <p id="complaints-empty" class="hidden py-5 text-center text-xs text-slate-500">Aún no se han registrado reclamos en esta demostración.</p>
+        </section>
+
+        <!-- ========================================================
+             PANTALLA 4: MENÚ DE OPCIONES
+             ======================================================== -->
+        <section id="screen-menu" class="screen-view hidden flex-1 flex flex-col justify-between overflow-y-auto no-scrollbar p-5 pt-2">
+          <div>
+            <!-- Header -->
+            <div class="flex items-center justify-between py-1">
+              <button onclick="switchScreen('screen-dashboard')" class="flex items-center space-x-0.5 text-slate-800 text-xs font-bold hover:text-teal-600">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                <span>Back</span>
+              </button>
+              <button onclick="showToast('Configuración del sistema')" class="text-slate-700 hover:text-slate-900">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+              </button>
+            </div>
+
+            <!-- Title -->
+            <div class="text-center my-1.5">
+              <h2 class="font-script text-2xl text-slate-800 font-bold">Menú de opciones</h2>
+            </div>
+
+            <!-- Big White Rounded List Card -->
+            <div class="bg-white rounded-3xl p-3.5 card-shadow border border-slate-100 divide-y divide-slate-100 text-xs font-medium text-slate-800 space-y-2 mt-2">
+              
+              <!-- Group 1: Credenciales -->
+              <div class="space-y-2.5 pb-2">
+                <button onclick="startRecovery('student')" class="w-full flex items-center space-x-3 text-left hover:text-teal-600">
+                  <div class="w-6 h-6 rounded-md bg-teal-50 text-teal-600 flex items-center justify-center">
+                    <i data-lucide="key" class="w-4 h-4"></i>
+                  </div>
+                  <span>Cambiar contraseña</span>
+                </button>
+                <button onclick="editProfileField('email')" class="w-full flex items-center space-x-3 text-left hover:text-teal-600">
+                  <div class="w-6 h-6 rounded-md bg-teal-50 text-teal-600 flex items-center justify-center">
+                    <i data-lucide="mail" class="w-4 h-4"></i>
+                  </div>
+                  <span>Cambiar correo</span>
+                </button>
+                <button onclick="editProfileField('phone')" class="w-full flex items-center space-x-3 text-left hover:text-teal-600">
+                  <div class="w-6 h-6 rounded-md bg-teal-50 text-teal-600 flex items-center justify-center">
+                    <i data-lucide="smartphone" class="w-4 h-4"></i>
+                  </div>
+                  <span>Cambiar celular</span>
+                </button>
+              </div>
+
+              <!-- Group 2: Seguridad & Bancos -->
+              <div class="pt-2 space-y-2.5 pb-2">
+                <button onclick="toggleDemoSetting('biometric')" class="w-full flex items-center space-x-3 text-left hover:text-teal-600">
+                  <div class="w-6 h-6 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <i data-lucide="fingerprint" class="w-4 h-4"></i>
+                  </div>
+                  <span>Cambiar método de inicio de sesión</span>
+                </button>
+                <button onclick="editPaymentMethod()" class="w-full flex items-center space-x-3 text-left hover:text-teal-600">
+                  <div class="w-6 h-6 rounded-md bg-sky-50 text-sky-600 flex items-center justify-center">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i>
+                  </div>
+                  <span>Registrar banco</span>
+                </button>
+                <button onclick="editPaymentMethod()" class="w-full flex items-center space-x-3 text-left hover:text-teal-600">
+                  <div class="w-6 h-6 rounded-md bg-teal-50 text-teal-600 flex items-center justify-center">
+                    <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+                  </div>
+                  <span>Cambiar banco</span>
+                </button>
+              </div>
+
+              <!-- Group 3: Travel preferences -->
+              <div class="pt-2 space-y-2.5">
+                <button onclick="configureTripLimit()" class="w-full flex items-center space-x-3 text-left hover:text-teal-600">
+                  <div class="w-6 h-6 rounded-md bg-cyan-50 text-cyan-600 flex items-center justify-center">
+                    <i data-lucide="banknote" class="w-4 h-4"></i>
+                  </div>
+                  <span>Límite de dinero por cada viaje</span>
+                </button>
+                <button onclick="showModal('Cartilla Viaje Gratis', 'Tienes 7/10 viajes acumulados. ¡3 viajes más para reclamar 1 pasaje gratis!')" class="w-full flex items-center space-x-3 text-left hover:text-teal-600">
+                  <div class="w-6 h-6 rounded-md bg-teal-50 text-teal-600 flex items-center justify-center">
+                    <i data-lucide="ticket" class="w-4 h-4"></i>
+                  </div>
+                  <span>Comprobar cartilla de viaje gratis</span>
+                </button>
+                <div id="university-card-menu-option" class="hidden space-y-2.5 border-t border-emerald-100 pt-3">
+                  <button onclick="switchScreen('screen-student-card')" class="w-full flex items-center space-x-3 text-left text-emerald-800 hover:text-emerald-600">
+                    <i data-lucide="badge-check" class="h-4 w-4"></i>
+                    <span>Validar carné universitario</span>
+                  </button>
+                  <button onclick="showModal('Vigencia de carné', 'El carné universitario figura vigente hasta el 31 de diciembre de 2026 en esta demostración. La vigencia real debe confirmarse con la universidad.')"
+                    class="w-full flex items-center space-x-3 text-left text-emerald-800 hover:text-emerald-600">
+                    <i data-lucide="calendar-check" class="h-4 w-4"></i>
+                    <span>Comprobar vigencia del carné</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="space-y-2.5 border-t border-slate-100 pt-3">
+                <button onclick="openComplaintsHistory()" class="w-full flex items-center space-x-3 text-left hover:text-teal-600">
+                  <i data-lucide="book-open-check" class="h-4 w-4 text-teal-600"></i>
+                  <span>Leer libro de reclamaciones</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Bottom Footer -->
+          <footer class="pt-3 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
+            <button onclick="openComplaints()" class="flex items-center space-x-1 hover:text-slate-700">
+              <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+              <span>Escribir un reclamo</span>
+            </button>
+            <span class="font-extrabold text-[#00b4b6] tracking-tight">BiniCard</span>
+          </footer>
+        </section>
+
+
+        <!-- ========================================================
+             PANTALLA 5: PERFIL
+             ======================================================== -->
+        <section id="screen-profile" class="screen-view hidden flex-1 flex flex-col justify-between overflow-y-auto no-scrollbar p-5 pt-2">
+          <div>
+            <!-- Header bar -->
+            <div class="flex items-center justify-between py-1">
+              <button onclick="switchScreen(profileReturnScreen())" class="flex items-center space-x-0.5 text-slate-800 text-xs font-bold hover:text-teal-600">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                <span>Atrás</span>
+              </button>
+              <button onclick="switchScreen(profileSettingsScreen())" class="text-slate-700 hover:text-slate-900">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+              </button>
+            </div>
+
+            <!-- Profile Title -->
+            <div class="text-center my-1">
+              <h2 class="font-script text-2xl text-slate-800 font-bold">Perfil</h2>
+            </div>
+
+            <!-- Avatar with + badge -->
+            <div class="flex flex-col items-center my-2">
+              <div class="relative">
+                <div class="w-20 h-20 rounded-full bg-[#1e6091] flex items-center justify-center text-white shadow-md">
+                  <i data-lucide="user" class="w-12 h-12 stroke-[1.5]"></i>
+                </div>
+                <!-- Plus badge -->
+                <button onclick="document.getElementById('profile-photo').click()" class="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center border-2 border-white shadow">
+                  <i data-lucide="plus" class="w-4 h-4 stroke-[3]"></i>
+                </button>
+              </div>
+              <button onclick="document.getElementById('profile-photo').click()" class="flex items-center space-x-1.5 text-xs text-teal-700 font-semibold mt-2 hover:underline">
+                <i data-lucide="camera" class="w-4 h-4"></i>
+                <span>Cambiar foto</span>
+              </button>
+              <input id="profile-photo" class="hidden" type="file" accept="image/*">
+            </div>
+
+            <!-- User details list (Masked privacy info) -->
+            <div class="bg-white rounded-3xl p-3.5 card-shadow border border-slate-100 text-xs font-semibold text-slate-700 space-y-2.5 mt-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                  <i data-lucide="user" class="w-4 h-4 text-teal-600"></i>
+                  <button type="button" onclick="editProfileField('name')">Cambiar nombre</button>
+                </div>
+                <span id="profile-name-value" class="text-slate-500 font-medium">Ju*** A****</span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                  <i data-lucide="user-check" class="w-4 h-4 text-teal-600"></i>
+                  <button type="button" onclick="editProfileField('surname')">Cambiar apellido</button>
+                </div>
+                <span id="profile-surname-value" class="text-slate-500 font-medium">Qu**** P****</span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                  <i data-lucide="contact" class="w-4 h-4 text-teal-600"></i>
+                  <span>DNI</span>
+                </div>
+                <span class="text-slate-500 font-medium">******28</span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                  <i data-lucide="smartphone" class="w-4 h-4 text-teal-600"></i>
+                  <button type="button" onclick="editProfileField('phone')">Cambiar celular</button>
+                </div>
+                <span id="profile-phone-value" class="text-slate-500 font-medium">*****945</span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                  <i data-lucide="mail" class="w-4 h-4 text-teal-600"></i>
+                  <button type="button" onclick="editProfileField('email')">Cambiar correo</button>
+                </div>
+                <span id="profile-email-value" class="text-slate-500 font-medium truncate max-w-[110px]">j***@gmail.com</span>
+              </div>
+            </div>
+
+            <!-- Quick Action Links -->
+            <div class="bg-white rounded-2xl p-3 card-shadow border border-slate-100 text-xs font-semibold text-slate-700 space-y-2.5 mt-3">
+              <button onclick="openHistory()" class="w-full flex items-center space-x-3 text-left hover:text-teal-600">
+                <i data-lucide="bus" class="w-4 h-4 text-teal-600"></i>
+                <span>Registro de viaje</span>
+              </button>
+
+              <button onclick="showModal('Notificaciones', 'No tienes notificaciones pendientes.')" class="w-full flex items-center space-x-3 text-left hover:text-teal-600">
+                <i data-lucide="bell" class="w-4 h-4 text-teal-600"></i>
+                <span>Notificaciones</span>
+              </button>
+
+              <button onclick="logout()" class="w-full flex items-center space-x-3 text-left hover:text-teal-600">
+                <i data-lucide="refresh-cw" class="w-4 h-4 text-teal-600"></i>
+                <span>Cambiar de cuenta</span>
+              </button>
+            </div>
+
+            <!-- Logout Button -->
+            <div class="mt-3">
+              <button onclick="logout()" class="w-full bg-white rounded-2xl py-2.5 px-4 card-shadow border border-red-100 flex items-center space-x-2.5 text-red-600 font-bold text-xs hover:bg-red-50/50 transition">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bottom Footer -->
+          <div class="text-center text-[10px] text-slate-400 py-1">
+            BiniCard v2.4.0 • Lima, Perú
+          </div>
+        </section>
+
+        <section id="screen-friend-ticket" class="screen-view hidden flex-1 overflow-y-auto no-scrollbar p-5 pt-3">
+          <button onclick="switchScreen('screen-dashboard')" class="mb-3 flex items-center gap-1 text-xs font-bold text-slate-700"><i data-lucide="chevron-left" class="h-4 w-4"></i>Volver</button>
+          <div class="rounded-3xl bg-white p-5 shadow-sm">
+            <h2 class="text-center text-xl font-extrabold text-slate-800">¿Tu amigo no tiene? ¡Ayúdalo!</h2>
+            <p class="mb-4 mt-2 text-center text-sm text-slate-600">Elige su destino y compra un boleto para otra persona.</p>
+            <form id="friendTicketForm" class="space-y-3" novalidate>
+              <label class="block text-xs font-bold text-slate-700" for="friend-dni">DNI de tu amigo</label>
+              <input id="friend-dni" class="input-pill w-full rounded-xl px-3 py-3 text-sm" inputmode="numeric" maxlength="8" placeholder="8 dígitos" required>
+              <p id="friend-dni-error" class="field-error" role="alert"></p>
+              <label class="block text-xs font-bold text-slate-700" for="friend-origin">Desde</label>
+              <select id="friend-origin" class="input-pill w-full rounded-xl bg-white px-3 py-3 text-sm"></select>
+              <label class="block text-xs font-bold text-slate-700" for="friend-destination">Hacia</label>
+              <select id="friend-destination" class="input-pill w-full rounded-xl bg-white px-3 py-3 text-sm"></select>
+              <p id="friend-route-estimate" class="text-center text-xs text-slate-600">La tarifa de la ruta se estimará aquí.</p>
+              <button class="w-full rounded-full bg-teal-600 py-3 text-sm font-bold text-white">Continuar al pago</button>
+            </form>
+          </div>
+        </section>
+
+        <section id="screen-payment" class="screen-view hidden flex-1 overflow-y-auto no-scrollbar p-5 pt-3">
+          <button onclick="switchScreen(paymentReturnScreen())" class="mb-3 flex items-center gap-1 text-xs font-bold text-slate-700"><i data-lucide="chevron-left" class="h-4 w-4"></i>Volver</button>
+          <div class="rounded-3xl bg-white p-5 shadow-sm">
+            <h2 class="mb-4 text-center text-xl font-extrabold text-slate-800">Pago del boleto</h2>
+            <div id="payment-summary" class="mb-4 rounded-2xl bg-teal-50 p-4 text-sm text-slate-700"></div>
+            <form id="paymentForm" class="space-y-3">
+              <p class="text-xs font-bold text-slate-700">Elige un método de pago (demostración)</p>
+              <label class="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="radio" name="payment-method" value="Tarjeta" checked> Tarjeta de prueba</label>
+              <label class="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="radio" name="payment-method" value="Yape"> Yape (simulado)</label>
+              <label class="flex items-center gap-2 rounded-xl border p-3 text-sm"><input type="radio" name="payment-method" value="Plin"> Plin (simulado)</label>
+              <button type="submit" class="w-full rounded-full bg-teal-600 py-3 text-sm font-bold text-white">Pagar boleto</button>
+            </form>
+            <p class="mt-3 text-center text-xs text-amber-700">No se cobra dinero: esta pasarela es solo una simulación.</p>
+          </div>
+        </section>
+
+        <section id="screen-ticket" class="screen-view hidden flex-1 overflow-y-auto no-scrollbar p-5 pt-3">
+          <div class="mx-auto flex min-h-[58vh] w-full max-w-sm flex-col justify-center rounded-3xl border border-teal-100 bg-white p-5 text-center shadow-xl">
+            <i data-lucide="circle-check" class="mx-auto h-10 w-10 text-emerald-600"></i>
+            <h2 id="ticket-title" class="mt-2 text-lg font-extrabold text-slate-800">Pago realizado correctamente</h2>
+            <p id="ticket-summary" class="mt-2 text-xs leading-relaxed text-slate-600"></p>
+            <div id="ticket-qrcode" class="mx-auto my-4 min-h-40 min-w-40"></div>
+            <p id="ticket-code" class="font-mono text-xs font-bold text-slate-700"></p>
+            <p class="mt-3 text-[10px] text-amber-700">Boleto de demostración; no es válido para viajar. En un navegador no se puede impedir de forma fiable una captura de pantalla.</p>
+            <button onclick="openHistory()" class="mt-4 w-full rounded-full bg-teal-600 py-3 text-sm font-bold text-white">Ver historial</button>
+            <button onclick="switchScreen('screen-dashboard')" class="mt-2 w-full py-2 text-sm font-bold text-teal-700">Volver al inicio</button>
+          </div>
+        </section>
+
+        <section id="screen-history" class="screen-view hidden flex-1 overflow-y-auto no-scrollbar p-5 pt-3">
+          <button onclick="switchScreen('screen-dashboard')" class="mb-3 flex items-center gap-1 text-xs font-bold text-slate-700"><i data-lucide="chevron-left" class="h-4 w-4"></i>Volver al inicio</button>
+          <h2 class="mb-3 text-center text-xl font-extrabold text-slate-800">Historial de boletos</h2>
+          <div id="history-list" class="space-y-3"></div>
+          <p id="history-empty" class="hidden py-5 text-center text-xs text-slate-500">Todavía no tienes boletos de demostración emitidos.</p>
+          <p class="mt-4 text-center text-[10px] text-slate-500">El historial dura 30 días en este navegador. No se envía a un servidor.</p>
+        </section>
+
+        <!-- Notification Toast Popup -->
+        <div id="toast-msg" class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-md text-white text-xs px-4 py-2 rounded-full shadow-lg border border-slate-700 pointer-events-none opacity-0 transition-opacity duration-300 z-50 text-center max-w-[85%]">
+          Mensaje de notificación
+        </div>
+
+        <!-- Reusable Modal Dialog -->
+        <div id="custom-modal" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+          <div class="bg-white rounded-3xl p-5 w-full max-w-xs shadow-2xl border border-slate-200">
+            <h3 id="modal-title" class="font-bold text-slate-800 text-sm mb-2 text-center">Título</h3>
+            <p id="modal-body" class="text-xs text-slate-600 leading-relaxed text-center mb-4">Contenido</p>
+            <button onclick="closeModal()" class="w-full py-2 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold text-xs rounded-full shadow active:scale-95 transition">
+              Entendido
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
